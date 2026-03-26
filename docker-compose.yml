@@ -23,6 +23,7 @@ services:
     env_file:
       - .env
     environment:
+      AIRFLOW__WEBSERVER__SECRET_KEY: ${AIRFLOW__WEBSERVER__SECRET_KEY}
       AIRFLOW__CORE__EXECUTOR: LocalExecutor
       AIRFLOW__CORE__LOAD_EXAMPLES: "false"
       AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: "true"
@@ -54,6 +55,7 @@ services:
     env_file:
       - .env
     environment:
+      AIRFLOW__WEBSERVER__SECRET_KEY: ${AIRFLOW__WEBSERVER__SECRET_KEY}
       AIRFLOW__CORE__EXECUTOR: LocalExecutor
       AIRFLOW__CORE__LOAD_EXAMPLES: "false"
       AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: "true"
@@ -78,6 +80,7 @@ services:
     env_file:
       - .env
     environment:
+      AIRFLOW__WEBSERVER__SECRET_KEY: ${AIRFLOW__WEBSERVER__SECRET_KEY}
       AIRFLOW__CORE__EXECUTOR: LocalExecutor
       AIRFLOW__CORE__LOAD_EXAMPLES: "false"
       AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: "true"
@@ -93,5 +96,35 @@ services:
         condition: service_completed_successfully
     command: scheduler
 
+  greenplum:
+    image: ionxwood/greenplum:6.21.0
+    container_name: greenplum
+    hostname: greenplum
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    environment:
+      GP_DB: ${GREENPLUM_DB}
+      GP_USER: ${GREENPLUM_USER}
+      GP_PASSWORD: ${GREENPLUM_PASSWORD}
+      TZ: Europe/Moscow
+    volumes:
+      - greenplum-data:/srv
+
+  greenplum-init:
+    image: ionxwood/greenplum:6.21.0
+    container_name: greenplum-init
+    depends_on:
+      - greenplum
+    environment:
+      GREENPLUM_DB: ${GREENPLUM_DB}
+      GREENPLUM_USER: ${GREENPLUM_USER}
+      GREENPLUM_PASSWORD: ${GREENPLUM_PASSWORD}
+    volumes:
+      - ./infra/greenplum/init/init_greenplum.sh:/init_greenplum.sh:ro
+    entrypoint: ["/bin/bash", "/init_greenplum.sh"]
+    restart: "no"
+
 volumes:
   airflow-postgres-data:
+  greenplum-data:

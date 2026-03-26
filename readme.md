@@ -1,58 +1,68 @@
 # Automated Data Warehouse Migration System
 
-## Описание
+<p align="center">
+  <img src="https://img.shields.io/badge/Airflow-2.9.1-brightgreen" alt="Airflow version">
+  <img src="https://img.shields.io/badge/Greenplum-6.21.0-darkgreen" alt="Greenplum version">
+  <img src="https://img.shields.io/badge/PostgreSQL-15-blue" alt="PostgreSQL version">
+  <img src="https://img.shields.io/badge/Python-3.12-purple" alt="Python version">
+  <img src="https://img.shields.io/badge/dbt-Core-orange" alt="dbt Core">
+  <img src="https://img.shields.io/badge/BigQuery-Google%20Cloud-lightblue" alt="BigQuery">
+</p>
 
-Данный проект - автоматизированная система миграции on-premise аналитического хранилища в облачную платформу Google Cloud.
+## Description
 
-В качестве исходной системы используется Apache Doris, а целевой средой выступает BigQuery. Процесс миграции включает не только перенос данных, но и сохранение структуры хранилища с зависимостями, а также проверку корректности результата.
+This project is an automated system for migrating an on-premise analytical warehouse to Google Cloud.
 
-Ключевая идея - представить миграцию как управляемый процесс, включающий оркестрацию, перенос данных, построение аналитического слоя и валидацию.
-
----
-
-## Архитектура решения
-
-Общая логика системы:
-
-Apache Doris → Apache Airflow → Google Cloud
-
-![architecture-scheme](data-flow-scheme.png)
-
-В облачной среде данные последовательно проходят:
-
-* слой первичной загрузки (raw);
-* слой аналитической обработки;
-* слой проверки и контроля.
+The source system is **Greenplum** and the target platform is **BigQuery**. The idea is not just to move tables, but to build a controlled migration process with orchestration, cloud loading, analytical layer creation and validation.
 
 ---
 
-## Используемые технологии
+## Architecture and Technologies
 
-* Apache Doris — исходное аналитическое хранилище
-* Apache Airflow — оркестрация процессов миграции
-* Google Cloud Storage — промежуточное хранилище данных
-* BigQuery — целевая аналитическая платформа
-* dbt Core — построение аналитического слоя
-* Python — реализация сервисной логики
+General flow:
+
+**Greenplum → Apache Airflow → Google Cloud**
+
+<p align="center">
+  <img src="docs/readme/data-flow-scheme.png" alt="architecture-scheme" width="900">
+</p>
+
+
+* **Greenplum** — source analytical warehouse
+* **Apache Airflow** — workflow orchestration
+* **Google Cloud Storage** — intermediate cloud storage
+* **BigQuery** — target analytical platform
+* **dbt Core** — analytical layer modeling
+* **Python** — migration service logic
+* **PostgreSQL** — Airflow metadata database
+
+Ports:
+
+* **Airflow Webserver**: `8080`
+* **Greenplum**: `5432`
 
 ---
 
-## Структура проекта
+## Project Structure
 
-```
+```text
 data-migration-system/
 ├── README.md
 ├── docker-compose.yml
+├── .env
 ├── .env.example
-├── config/
-│   ├── domains.yaml
-│   └── migration.yaml
+├── .gitignore
+├── airflow/
+│   └── dags/
+├── docs/
+│   └── readme/
 ├── infra/
 │   ├── airflow/
 │   │   ├── Dockerfile
 │   │   └── requirements.txt
-│   └── doris/
+│   └── greenplum/
 │       └── init/
+│           └── init_greenplum.sh
 ├── src/
 │   └── migration_service/
 │       ├── connectors/
@@ -60,29 +70,66 @@ data-migration-system/
 │       ├── loading/
 │       ├── metadata/
 │       └── validation/
-├── airflow/
-│   └── dags/
 ├── dbt/
 │   ├── dbt_project.yml
 │   └── models/
 ├── metadata/
+├── config/
 └── scripts/
 ```
 
-* **config/** — конфигурации доменов, таблиц и параметров миграции
-* **infra/** — Docker-окружение и инициализация систем
-* **src/migration_service/** — основной код сервиса миграции
-* **airflow/dags/** — DAG-файлы оркестрации
-* **dbt/** — модели аналитического слоя
-* **metadata/** — извлечённые схемы и артефакты миграции
-* **scripts/** — вспомогательные утилиты
+* **airflow/dags/** — Airflow DAGs
+* **infra/airflow/** — Airflow image and dependencies
+* **infra/greenplum/init/** — Greenplum initialization scripts
+* **src/migration_service/** — main migration code
+* **dbt/** — target analytical models
+* **metadata/** — extracted schemas and artifacts
+* **config/** — migration configuration
+* **scripts/** — helper scripts
 
 ---
 
-## Основные этапы миграции
+## Quick Start
 
-1. Извлечение данных и метаданных из Apache Doris
-2. Загрузка данных в Google Cloud Storage
-3. Перенос данных в BigQuery (raw слой)
-4. Построение аналитического слоя
-5. Проверка корректности миграции
+### 1. Clone repository
+
+```bash
+git clone <repository-url>
+cd data-migration-system
+```
+
+### 2. Create `.env` like .env.example
+
+
+### 3. Start containers
+
+```bash
+docker compose up -d --build
+```
+
+### 4. Create Airflow Connection
+
+Open `http://localhost:8080`
+
+Login:
+
+* **username**: `admin`
+* **password**: `admin`
+
+In Airflow UI go to:
+
+**Admin → Connections → Add Connection**
+
+Use these values:
+
+* **Connection Id**: `greenplum_dwh`
+* **Connection Type**: `Postgres`
+* **Host**: `greenplum`
+* **Schema**: `dwh`
+* **Login**: `gpadmin`
+* **Password**: `gpadmin`
+* **Port**: `5432`
+  
+<p align="center">
+  <img src="docs/airflow_connection.png" alt="architecture-scheme" width="900">
+</p>
