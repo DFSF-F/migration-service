@@ -1,0 +1,65 @@
+product: finance
+
+cross_product_dependencies:
+  - dds.dim_hr_employee
+  - dds.dim_hr_department
+  - dds.dim_position
+
+object_dependencies:
+  - target: dds.dim_finance_cost_center
+    depends_on:
+      - raw.finance_employee_expense_raw
+      - raw.finance_budget_limit_raw
+
+  - target: dds.dim_finance_vendor
+    depends_on:
+      - raw.finance_vendor_payment_raw
+
+  - target: dds.fct_employee_expense
+    depends_on:
+      - raw.finance_employee_expense_raw
+      - dds.dim_finance_cost_center
+      - dds.dim_finance_vendor
+      - dds.dim_hr_employee
+
+  - target: dds.fct_employee_card_transaction
+    depends_on:
+      - raw.finance_corporate_card_txn_raw
+      - dds.dim_hr_employee
+
+  - target: dds.fct_employee_advance_report
+    depends_on:
+      - raw.finance_advance_report_raw
+      - dds.dim_hr_employee
+
+  - target: dds.fct_employee_finance_signal
+    depends_on:
+      - raw.finance_corporate_card_txn_raw
+      - raw.finance_advance_report_raw
+      - raw.finance_payroll_adjustment_raw
+      - raw.finance_vendor_payment_raw
+      - dds.dim_hr_employee
+
+  - target: dds.fct_employee_finance_snapshot
+    depends_on:
+      - dds.fct_employee_expense
+      - dds.fct_employee_card_transaction
+      - dds.fct_employee_advance_report
+      - dds.fct_employee_finance_signal
+      - dds.dim_hr_employee
+
+  - target: dm.employee_finance_control_report
+    depends_on:
+      - dds.fct_employee_finance_snapshot
+      - dds.dim_hr_employee
+      - dds.dim_hr_department
+      - dds.dim_position
+      - dds.fct_employee_finance_signal
+
+  - target: dm.v_employee_suspicious_expense_signals
+    depends_on:
+      - dds.fct_employee_finance_signal
+      - dds.dim_hr_employee
+      - dds.dim_hr_department
+      - dds.dim_position
+      - dds.fct_employee_finance_snapshot

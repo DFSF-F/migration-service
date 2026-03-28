@@ -1,0 +1,25 @@
+product: hr
+code: employee_hr_profile
+name: Кадровый профиль и активность сотрудника
+
+layers:
+  raw:
+    - raw.hr_employee_master_raw
+    - raw.hr_position_history_raw
+    - raw.hr_department_history_raw
+    - raw.hr_absence_events_raw
+    - raw.hr_overtime_events_raw
+    - raw.hr_dismissal_signals_raw
+
+  dds:
+    - dds.dim_hr_department
+    - dds.dim_position
+    - dds.dim_hr_employee
+    - dds.fct_employee_position_history
+    - dds.fct_employee_absence
+    - dds.fct_employee_activity_signal
+    - dds.fct_employee_hr_snapshot
+
+  dm:
+    - dm.employee_hr_profile_report
+    - dm.v_employee_instability_signals

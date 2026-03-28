@@ -1,0 +1,78 @@
+product: risk
+
+pipeline_steps:
+  - id: create_raw_tables
+    artifact: risk/001_raw_tables.sql
+    type: sql
+
+  - id: create_dds_tables
+    artifact: risk/002_dds_tables.sql
+    type: sql
+
+  - id: create_dm_objects
+    artifact: risk/003_dm_objects.sql
+    type: sql
+
+  - id: generate_raw_files
+    artifact: scripts/data_gen/generate_risk_raw_data.py
+    type: python
+
+  - id: load_raw_data
+    artifact: airflow_task.load_raw_to_greenplum
+    type: airflow_python
+
+  - id: build_dds
+    artifact: risk/005_build_dds.sql
+    type: sql
+
+  - id: build_dm
+    artifact: risk/006_build_dm.sql
+    type: sql
+
+object_dependencies:
+  - target: dds.dim_department
+    depends_on:
+      - raw.risk_org_structure_raw
+
+  - target: dds.dim_employee
+    depends_on:
+      - raw.risk_employee_registry_raw
+      - dds.dim_department
+
+  - target: dds.dim_risk_event_type
+    depends_on:
+      - raw.risk_ib_incidents_raw
+      - raw.risk_security_incidents_raw
+      - raw.risk_compliance_incidents_raw
+      - raw.risk_nonwork_activity_raw
+
+  - target: dds.fct_risk_event
+    depends_on:
+      - raw.risk_ib_incidents_raw
+      - raw.risk_security_incidents_raw
+      - raw.risk_compliance_incidents_raw
+      - raw.risk_nonwork_activity_raw
+      - dds.dim_employee
+      - dds.dim_risk_event_type
+
+  - target: dds.fct_employee_risk_factor
+    depends_on:
+      - dds.fct_risk_event
+
+  - target: dds.fct_employee_risk_snapshot
+    depends_on:
+      - dds.fct_employee_risk_factor
+      - dds.dim_employee
+
+  - target: dm.employee_operational_risk_report
+    depends_on:
+      - dds.fct_employee_risk_snapshot
+      - dds.dim_employee
+      - dds.dim_department
+      - dds.fct_risk_event
+
+  - target: dm.v_employee_risk_trend
+    depends_on:
+      - dds.fct_employee_risk_snapshot
+      - dds.dim_employee
+      - dds.dim_department

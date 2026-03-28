@@ -11,6 +11,7 @@ storage/reports/*
 secrets/*
 !secrets/.gitkeep
 
+airflow/dags/test*
 airflow/logs/*
 airflow/plugins/__pycache__/
 

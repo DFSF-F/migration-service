@@ -1,0 +1,66 @@
+product: access
+
+cross_product_dependencies:
+  - dds.dim_hr_employee
+  - dds.dim_hr_department
+
+object_dependencies:
+  - target: dds.dim_access_system
+    depends_on:
+      - raw.access_system_accounts_raw
+
+  - target: dds.dim_access_role
+    depends_on:
+      - raw.access_role_assignments_raw
+      - dds.dim_access_system
+
+  - target: dds.fct_employee_account
+    depends_on:
+      - raw.access_system_accounts_raw
+      - dds.dim_access_system
+      - dds.dim_hr_employee
+
+  - target: dds.fct_employee_role_assignment
+    depends_on:
+      - raw.access_role_assignments_raw
+      - dds.fct_employee_account
+      - dds.dim_access_role
+      - dds.dim_hr_employee
+
+  - target: dds.fct_employee_login_event
+    depends_on:
+      - raw.access_login_events_raw
+      - dds.fct_employee_account
+      - dds.dim_access_system
+      - dds.dim_hr_employee
+
+  - target: dds.fct_employee_access_signal
+    depends_on:
+      - raw.access_privileged_access_raw
+      - raw.access_login_events_raw
+      - raw.access_file_operations_raw
+      - raw.access_network_activity_raw
+      - dds.dim_access_system
+      - dds.dim_hr_employee
+
+  - target: dds.fct_employee_access_snapshot
+    depends_on:
+      - dds.fct_employee_account
+      - dds.fct_employee_role_assignment
+      - dds.fct_employee_login_event
+      - dds.fct_employee_access_signal
+      - dds.dim_hr_employee
+
+  - target: dm.employee_access_control_report
+    depends_on:
+      - dds.fct_employee_access_snapshot
+      - dds.dim_hr_employee
+      - dds.dim_hr_department
+      - dds.fct_employee_access_signal
+
+  - target: dm.v_privileged_access_exceptions
+    depends_on:
+      - dds.fct_employee_access_signal
+      - dds.dim_hr_employee
+      - dds.dim_hr_department
+      - dds.fct_employee_access_snapshot

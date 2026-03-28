@@ -1,0 +1,25 @@
+product: access
+code: employee_access_control
+name: Доступы, учётные записи и активность сотрудника
+
+layers:
+  raw:
+    - raw.access_system_accounts_raw
+    - raw.access_role_assignments_raw
+    - raw.access_privileged_access_raw
+    - raw.access_login_events_raw
+    - raw.access_file_operations_raw
+    - raw.access_network_activity_raw
+
+  dds:
+    - dds.dim_access_system
+    - dds.dim_access_role
+    - dds.fct_employee_account
+    - dds.fct_employee_role_assignment
+    - dds.fct_employee_login_event
+    - dds.fct_employee_access_signal
+    - dds.fct_employee_access_snapshot
+
+  dm:
+    - dm.employee_access_control_report
+    - dm.v_privileged_access_exceptions

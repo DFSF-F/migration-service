@@ -64,6 +64,8 @@ services:
     volumes:
       - ./airflow/dags:/opt/airflow/dags
       - ./secrets:/opt/airflow/secrets:ro
+      - ./scripts:/opt/airflow/project/scripts
+      - ./infra/greenplum/init:/opt/airflow/project/sql:ro
     ports:
       - "8080:8080"
     depends_on:
@@ -89,6 +91,8 @@ services:
     volumes:
       - ./airflow/dags:/opt/airflow/dags
       - ./secrets:/opt/airflow/secrets:ro
+      - ./scripts:/opt/airflow/project/scripts
+      - ./infra/greenplum/init:/opt/airflow/project/sql:ro
     depends_on:
       airflow-postgres:
         condition: service_healthy
@@ -110,20 +114,7 @@ services:
       TZ: Europe/Moscow
     volumes:
       - greenplum-data:/srv
-
-  greenplum-init:
-    image: ionxwood/greenplum:6.21.0
-    container_name: greenplum-init
-    depends_on:
-      - greenplum
-    environment:
-      GREENPLUM_DB: ${GREENPLUM_DB}
-      GREENPLUM_USER: ${GREENPLUM_USER}
-      GREENPLUM_PASSWORD: ${GREENPLUM_PASSWORD}
-    volumes:
-      - ./infra/greenplum/init/init_greenplum.sh:/init_greenplum.sh:ro
-    entrypoint: ["/bin/bash", "/init_greenplum.sh"]
-    restart: "no"
+      - ./scripts/data_gen/output:/data/input:ro
 
 volumes:
   airflow-postgres-data:

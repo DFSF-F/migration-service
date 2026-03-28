@@ -1,0 +1,46 @@
+product: risk
+code: employee_operational_risk
+name: Операционные риски по сотруднику
+description: >
+  Аналитический продукт для оценки и мониторинга операционных рисков сотрудников
+  на основе событий ИБ, СБ, комплаенса, нерабочей активности и кадрового контекста.
+
+artifacts:
+  generator:
+    path: scripts/data_gen/generate_risk_raw_data.py
+    type: python
+
+  sql:
+    - path: risk/001_raw_tables.sql
+      purpose: create_raw_tables
+    - path: risk/002_dds_tables.sql
+      purpose: create_dds_tables
+    - path: risk/003_dm_objects.sql
+      purpose: create_dm_objects
+    - path: risk/004_load_raw.sql
+      purpose: manual_raw_load
+    - path: risk/005_build_dds.sql
+      purpose: build_dds
+    - path: risk/006_build_dm.sql
+      purpose: build_dm
+
+layers:
+  raw:
+    - raw.risk_ib_incidents_raw
+    - raw.risk_security_incidents_raw
+    - raw.risk_compliance_incidents_raw
+    - raw.risk_nonwork_activity_raw
+    - raw.risk_employee_registry_raw
+    - raw.risk_org_structure_raw
+
+  dds:
+    - dds.dim_department
+    - dds.dim_employee
+    - dds.dim_risk_event_type
+    - dds.fct_risk_event
+    - dds.fct_employee_risk_factor
+    - dds.fct_employee_risk_snapshot
+
+  dm:
+    - dm.employee_operational_risk_report
+    - dm.v_employee_risk_trend
