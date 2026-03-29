@@ -46,36 +46,73 @@ Ports:
 ## Project Structure
 
 ```text
-data-migration-system/
+migration-service/
 ├── README.md
 ├── docker-compose.yml
-├── .env
 ├── .env.example
-├── .gitignore
 ├── airflow/
 │   └── dags/
-├── docs/
-│   └── readme/
+        ├── full_source_build_pipeline.py
+│       ├── hr_pipeline.py
+│       ├── risk_pipeline.py
+│       ├── access_pipeline.py
+│       └── finance_pipeline.py
 ├── infra/
 │   ├── airflow/
 │   │   ├── Dockerfile
 │   │   └── requirements.txt
 │   └── greenplum/
 │       └── init/
-│           └── init_greenplum.sh
-├── src/
-│   └── migration_service/
-│       ├── connectors/
-│       ├── extraction/
-│       ├── loading/
-│       ├── metadata/
-│       └── validation/
-├── dbt/
-│   ├── dbt_project.yml
-│   └── models/
-├── metadata/
-├── config/
-└── scripts/
+│           ├── risk/
+│           │   ├── 001_raw_tables.sql
+│           │   ├── 002_dds_tables.sql
+│           │   ├── 003_dm_objects.sql
+│           │   ├── 004_load_raw.sql
+│           │   ├── 005_build_dds.sql
+│           │   ├── 006_build_dm.sql
+│           │   ├── metadata.yaml
+│           │   └── dependencies.yaml
+│           ├── hr/
+│           │   ├── 001_raw_tables.sql
+│           │   ├── 002_dds_tables.sql
+│           │   ├── 003_dm_objects.sql
+│           │   ├── 004_load_raw.sql
+│           │   ├── 005_build_dds.sql
+│           │   ├── 006_build_dm.sql
+│           │   ├── metadata.yaml
+│           │   └── dependencies.yaml
+│           ├── access/
+│           │   ├── 001_raw_tables.sql
+│           │   ├── 002_dds_tables.sql
+│           │   ├── 003_dm_objects.sql
+│           │   ├── 004_load_raw.sql
+│           │   ├── 005_build_dds.sql
+│           │   ├── 006_build_dm.sql
+│           │   ├── metadata.yaml
+│           │   └── dependencies.yaml
+│           └── finance/
+│               ├── 001_raw_tables.sql
+│               ├── 002_dds_tables.sql
+│               ├── 003_dm_objects.sql
+│               ├── 004_load_raw.sql
+│               ├── 005_build_dds.sql
+│               ├── 006_build_dm.sql
+│               ├── metadata.yaml
+│               └── dependencies.yaml
+├── scripts/
+│   ├── init_greenplum_base.sh
+│   ├── run_greenplum_sql.sh
+│   ├── run_greenplum_query.sh
+│   └── data_gen/
+│       ├── generate_risk_raw_data.py
+│       ├── generate_hr_raw_data.py
+│       ├── generate_access_raw_data.py
+│       ├── generate_finance_raw_data.py
+│       └── output/
+└── docs/
+    ├── airflow_connection.png
+    └── readme/
+        ├──data-flow-scheme.png
 ```
 
 * **airflow/dags/** — Airflow DAGs
