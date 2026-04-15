@@ -1,18 +1,28 @@
 __pycache__/
-*.pyc
-.env
-venv/
-.venv/
+*.py[cod]
+*.pyo
+*.pyd
 
-storage/exports/*
-storage/tmp/*
-storage/reports/*
+# OS / IDE
+.DS_Store
+.vscode/
+.idea/
 
-secrets/*
-!secrets/.gitkeep
+# Local secrets
+secrets/gcp/*.json
+!secrets/gcp/.gitkeep
 
-airflow/logs/*
-airflow/plugins/__pycache__/
+# Local BigQuery runners
+scripts/run_bigquery_scenarios.py
+scripts/run_bigquery_scenarios_local.py
+scripts/*_bq_runner.py
 
-dbt/logs/*
-dbt/target/*
+# Local curated BigQuery SQL scenarios for any domain
+sql/*_bq/*.sql
+sql/**/generated/*.sql
+sql/**/debug/*.sql
+
+# Local temp artifacts
+tmp/
+temp/
+*.log

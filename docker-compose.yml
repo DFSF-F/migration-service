@@ -1,3 +1,5 @@
+version: "3.9"
+
 services:
   airflow-postgres:
     image: postgres:15
@@ -28,10 +30,16 @@ services:
       AIRFLOW__CORE__LOAD_EXAMPLES: "false"
       AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: "true"
       AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://${POSTGRES_USER}:${POSTGRES_PASSWORD}@airflow-postgres/${POSTGRES_DB}
-      GOOGLE_APPLICATION_CREDENTIALS: /opt/airflow/secrets/gcp-sa.json
+      GOOGLE_APPLICATION_CREDENTIALS: /opt/airflow/secrets/gcp/service-account.json
+      GCP_PROJECT_ID: ${GCP_PROJECT_ID}
+      GCP_REGION: ${GCP_REGION}
+      GCS_STAGING_BUCKET: ${GCS_STAGING_BUCKET}
     volumes:
       - ./airflow/dags:/opt/airflow/dags
       - ./secrets:/opt/airflow/secrets:ro
+      - ./scripts:/opt/airflow/project/scripts
+      - ./bigquery:/opt/airflow/project/bigquery:ro
+      - ./infra/greenplum/init:/opt/airflow/project/sql:ro
     depends_on:
       airflow-postgres:
         condition: service_healthy
@@ -46,7 +54,7 @@ services:
           --firstname ${AIRFLOW_ADMIN_FIRSTNAME} \
           --lastname ${AIRFLOW_ADMIN_LASTNAME} \
           --role Admin \
-          --email ${AIRFLOW_ADMIN_EMAIL}
+          --email ${AIRFLOW_ADMIN_EMAIL} || true
 
   airflow-webserver:
     build:
@@ -60,11 +68,15 @@ services:
       AIRFLOW__CORE__LOAD_EXAMPLES: "false"
       AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: "true"
       AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://${POSTGRES_USER}:${POSTGRES_PASSWORD}@airflow-postgres/${POSTGRES_DB}
-      GOOGLE_APPLICATION_CREDENTIALS: /opt/airflow/secrets/gcp-sa.json
+      GOOGLE_APPLICATION_CREDENTIALS: /opt/airflow/secrets/gcp/service-account.json
+      GCP_PROJECT_ID: ${GCP_PROJECT_ID}
+      GCP_REGION: ${GCP_REGION}
+      GCS_STAGING_BUCKET: ${GCS_STAGING_BUCKET}
     volumes:
       - ./airflow/dags:/opt/airflow/dags
       - ./secrets:/opt/airflow/secrets:ro
       - ./scripts:/opt/airflow/project/scripts
+      - ./bigquery:/opt/airflow/project/bigquery:ro
       - ./infra/greenplum/init:/opt/airflow/project/sql:ro
     ports:
       - "8080:8080"
@@ -87,11 +99,15 @@ services:
       AIRFLOW__CORE__LOAD_EXAMPLES: "false"
       AIRFLOW__CORE__DAGS_ARE_PAUSED_AT_CREATION: "true"
       AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://${POSTGRES_USER}:${POSTGRES_PASSWORD}@airflow-postgres/${POSTGRES_DB}
-      GOOGLE_APPLICATION_CREDENTIALS: /opt/airflow/secrets/gcp-sa.json
+      GOOGLE_APPLICATION_CREDENTIALS: /opt/airflow/secrets/gcp/service-account.json
+      GCP_PROJECT_ID: ${GCP_PROJECT_ID}
+      GCP_REGION: ${GCP_REGION}
+      GCS_STAGING_BUCKET: ${GCS_STAGING_BUCKET}
     volumes:
       - ./airflow/dags:/opt/airflow/dags
       - ./secrets:/opt/airflow/secrets:ro
       - ./scripts:/opt/airflow/project/scripts
+      - ./bigquery:/opt/airflow/project/bigquery:ro
       - ./infra/greenplum/init:/opt/airflow/project/sql:ro
     depends_on:
       airflow-postgres:

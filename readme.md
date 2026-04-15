@@ -170,3 +170,16 @@ Use these values:
 <p align="center">
   <img src="docs/airflow_connection.png" alt="architecture-scheme" width="900">
 </p>
+
+### 5. Google Cloud Setup
+
+* Create `service account`
+* Create a JSON key for the service account and save it to: **secrets/gcp/service-account.json**
+
+<p align="center">
+  <img src="docs/service-acc.png" alt="svc-gc" width="900">
+</p>
+
+* Grant IAM roles: storage.objectAdmin, bigquery.dataEditor, bigquery.jobUser
+* Create a Cloud Storage bucket
+* Create BigQuery datasets - use the same region for all datasets
