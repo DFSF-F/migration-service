@@ -5,7 +5,7 @@
   <img src="https://img.shields.io/badge/Greenplum-6.21.0-darkgreen" alt="Greenplum version">
   <img src="https://img.shields.io/badge/PostgreSQL-15-blue" alt="PostgreSQL version">
   <img src="https://img.shields.io/badge/Python-3.12-purple" alt="Python version">
-  <img src="https://img.shields.io/badge/dbt-Core-orange" alt="dbt Core">
+  <img src="https://img.shields.io/badge/dbt-1.11.8-orange" alt="dbt 1.11.8">
   <img src="https://img.shields.io/badge/BigQuery-Google%20Cloud-lightblue" alt="BigQuery">
 </p>
 
@@ -49,70 +49,96 @@ Ports:
 migration-service/
 ├── README.md
 ├── docker-compose.yml
+├── .env
 ├── .env.example
+├── .gitignore
 ├── airflow/
 │   └── dags/
-        ├── full_source_build_pipeline.py
+│       ├── full_source_build_pipeline.py
+│       ├── full_migration_orchestration_pipeline.py
 │       ├── hr_pipeline.py
 │       ├── risk_pipeline.py
 │       ├── access_pipeline.py
-│       └── finance_pipeline.py
+│       ├── finance_pipeline.py
+│       ├── hr_cloud_pipeline.py
+│       ├── risk_cloud_pipeline.py
+│       ├── access_cloud_pipeline.py
+│       ├── finance_cloud_pipeline.py
+│       ├── hr_dbt_pipeline.py
+│       ├── risk_dbt_pipeline.py
+│       ├── access_dbt_pipeline.py
+│       └── finance_dbt_pipeline.py
+├── bigquery/
+│   ├── dds & dm build scripts
+├── dbt/
+│   ├── dbt_project.yml
+│   ├── profiles.yml
+│   ├── .user.yml
+│   ├── macros/
+│   │   ├── generate_schema_name.sql
+│   │   └── type_casts.sql
+│   ├── models/
+│   │   ├── hr/
+│   │   │   ├── dds/  
+│   │   │   ├── dm/      
+│   │   │   └── schema.yml
+│   │   ├── risk/
+│   │   │   ├── dds/      
+│   │   │   ├── dm/       
+│   │   │   └── schema.yml
+│   │   ├── access/
+│   │   │   ├── dds/      
+│   │   │   ├── dm/       
+│   │   │   └── schema.yml
+│   │   └── finance/
+│   │       ├── dds/      
+│   │       ├── dm/       
+│   │       └── schema.yml
 ├── infra/
 │   ├── airflow/
 │   │   ├── Dockerfile
 │   │   └── requirements.txt
 │   └── greenplum/
 │       └── init/
-│           ├── risk/
-│           │   ├── 001_raw_tables.sql
-│           │   ├── 002_dds_tables.sql
-│           │   ├── 003_dm_objects.sql
-│           │   ├── 004_load_raw.sql
-│           │   ├── 005_build_dds.sql
-│           │   ├── 006_build_dm.sql
+│           ├── hr/
+│           │   ├── sql-scripts
 │           │   ├── metadata.yaml
 │           │   └── dependencies.yaml
-│           ├── hr/
-│           │   ├── 001_raw_tables.sql
-│           │   ├── 002_dds_tables.sql
-│           │   ├── 003_dm_objects.sql
-│           │   ├── 004_load_raw.sql
-│           │   ├── 005_build_dds.sql
-│           │   ├── 006_build_dm.sql
+│           ├── risk/
+│           │   ├── sql-scripts
 │           │   ├── metadata.yaml
 │           │   └── dependencies.yaml
 │           ├── access/
-│           │   ├── 001_raw_tables.sql
-│           │   ├── 002_dds_tables.sql
-│           │   ├── 003_dm_objects.sql
-│           │   ├── 004_load_raw.sql
-│           │   ├── 005_build_dds.sql
-│           │   ├── 006_build_dm.sql
+│           │   ├── sql-scripts
 │           │   ├── metadata.yaml
 │           │   └── dependencies.yaml
 │           └── finance/
-│               ├── 001_raw_tables.sql
-│               ├── 002_dds_tables.sql
-│               ├── 003_dm_objects.sql
-│               ├── 004_load_raw.sql
-│               ├── 005_build_dds.sql
-│               ├── 006_build_dm.sql
+│               ├── sql-scripts
 │               ├── metadata.yaml
 │               └── dependencies.yaml
 ├── scripts/
 │   ├── init_greenplum_base.sh
 │   ├── run_greenplum_sql.sh
 │   ├── run_greenplum_query.sh
+│   ├── cloud_export/
+│   │   ├── hr/        
+│   │   ├── risk/   
+│   │   ├── access/ 
+│   │   └── finance/
 │   └── data_gen/
-│       ├── generate_risk_raw_data.py
 │       ├── generate_hr_raw_data.py
+│       ├── generate_risk_raw_data.py
 │       ├── generate_access_raw_data.py
 │       ├── generate_finance_raw_data.py
 │       └── output/
+├── secrets/
+│   └── gcp/
+│       └── service-account.json
 └── docs/
     ├── airflow_connection.png
     └── readme/
-        ├──data-flow-scheme.png
+        ├── service-acc.png
+        └── data-flow-scheme.png
 ```
 
 * **airflow/dags/** — Airflow DAGs
