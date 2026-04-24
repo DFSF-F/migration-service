@@ -1,0 +1,13 @@
+version: 2
+
+sources:
+  - name: finance_raw
+    database: "{{ env_var('GCP_PROJECT_ID') }}"
+    schema: finance_raw
+    tables:
+      - name: finance_budget_limit_raw
+      - name: finance_employee_expense_raw
+      - name: finance_vendor_payment_raw
+      - name: finance_corporate_card_txn_raw
+      - name: finance_advance_report_raw
+      - name: finance_payroll_adjustment_raw

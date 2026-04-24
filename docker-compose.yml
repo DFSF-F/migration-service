@@ -78,6 +78,7 @@ services:
       - ./scripts:/opt/airflow/project/scripts
       - ./bigquery:/opt/airflow/project/bigquery:ro
       - ./infra/greenplum/init:/opt/airflow/project/sql:ro
+      - /var/run/docker.sock:/var/run/docker.sock
     ports:
       - "8080:8080"
     depends_on:
@@ -109,6 +110,7 @@ services:
       - ./scripts:/opt/airflow/project/scripts
       - ./bigquery:/opt/airflow/project/bigquery:ro
       - ./infra/greenplum/init:/opt/airflow/project/sql:ro
+      - /var/run/docker.sock:/var/run/docker.sock
     depends_on:
       airflow-postgres:
         condition: service_healthy
@@ -131,6 +133,21 @@ services:
     volumes:
       - greenplum-data:/srv
       - ./scripts/data_gen/output:/data/input:ro
+
+  dbt-runner:
+    build:
+      context: ./infra/dbt
+    container_name: dbt-runner
+    env_file:
+      - .env
+    environment:
+      GCP_PROJECT_ID: ${GCP_PROJECT_ID}
+      GCP_REGION: ${GCP_REGION}
+    volumes:
+      - ./dbt:/app/dbt
+      - ./secrets:/app/secrets:ro
+    command: sleep infinity
+
 
 volumes:
   airflow-postgres-data:

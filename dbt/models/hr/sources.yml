@@ -1,0 +1,13 @@
+version: 2
+
+sources:
+  - name: hr_raw
+    database: "{{ env_var('GCP_PROJECT_ID') }}"
+    schema: hr_raw
+    tables:
+      - name: hr_employee_master_raw
+      - name: hr_position_history_raw
+      - name: hr_department_history_raw
+      - name: hr_absence_events_raw
+      - name: hr_overtime_events_raw
+      - name: hr_dismissal_signals_raw

@@ -12,51 +12,127 @@ with DAG(
     start_date=datetime(2024, 1, 1),
     schedule=None,
     catchup=False,
-    tags=["migration", "orchestration", "gcp", "bigquery", "gcs"],
+    max_active_runs=1,
+    tags=["orchestration", "full-migration"],
 ) as dag:
 
     start = EmptyOperator(task_id="start")
 
-    run_access = TriggerDagRunOperator(
-        task_id="run_access_cloud_pipeline",
-        trigger_dag_id="access_cloud_pipeline",
+    run_full_source_build_pipeline = TriggerDagRunOperator(
+        task_id="run_full_source_build_pipeline",
+        trigger_dag_id="full_source_build_pipeline",
         wait_for_completion=True,
-        poke_interval=30,
-        reset_dag_run=True,
-        failed_states=["failed"],
+        poke_interval=20,
+        reset_dag_run=False,
         allowed_states=["success"],
+        failed_states=["failed"],
     )
 
-    run_finance = TriggerDagRunOperator(
-        task_id="run_finance_cloud_pipeline",
-        trigger_dag_id="finance_cloud_pipeline",
-        wait_for_completion=True,
-        poke_interval=30,
-        reset_dag_run=True,
-        failed_states=["failed"],
-        allowed_states=["success"],
-    )
-
-    run_hr = TriggerDagRunOperator(
+    run_hr_cloud_pipeline = TriggerDagRunOperator(
         task_id="run_hr_cloud_pipeline",
         trigger_dag_id="hr_cloud_pipeline",
         wait_for_completion=True,
-        poke_interval=30,
-        reset_dag_run=True,
-        failed_states=["failed"],
+        poke_interval=20,
+        reset_dag_run=False,
         allowed_states=["success"],
+        failed_states=["failed"],
     )
 
-    run_risk = TriggerDagRunOperator(
+    run_risk_cloud_pipeline = TriggerDagRunOperator(
         task_id="run_risk_cloud_pipeline",
         trigger_dag_id="risk_cloud_pipeline",
         wait_for_completion=True,
-        poke_interval=30,
-        reset_dag_run=True,
-        failed_states=["failed"],
+        poke_interval=20,
+        reset_dag_run=False,
         allowed_states=["success"],
+        failed_states=["failed"],
+    )
+
+    run_access_cloud_pipeline = TriggerDagRunOperator(
+        task_id="run_access_cloud_pipeline",
+        trigger_dag_id="access_cloud_pipeline",
+        wait_for_completion=True,
+        poke_interval=20,
+        reset_dag_run=False,
+        allowed_states=["success"],
+        failed_states=["failed"],
+    )
+
+    run_finance_cloud_pipeline = TriggerDagRunOperator(
+        task_id="run_finance_cloud_pipeline",
+        trigger_dag_id="finance_cloud_pipeline",
+        wait_for_completion=True,
+        poke_interval=20,
+        reset_dag_run=False,
+        allowed_states=["success"],
+        failed_states=["failed"],
+    )
+
+    run_hr_dbt_pipeline = TriggerDagRunOperator(
+        task_id="run_hr_dbt_pipeline",
+        trigger_dag_id="hr_dbt_pipeline",
+        wait_for_completion=True,
+        poke_interval=20,
+        reset_dag_run=False,
+        allowed_states=["success"],
+        failed_states=["failed"],
+    )
+
+    run_risk_dbt_pipeline = TriggerDagRunOperator(
+        task_id="run_risk_dbt_pipeline",
+        trigger_dag_id="risk_dbt_pipeline",
+        wait_for_completion=True,
+        poke_interval=20,
+        reset_dag_run=False,
+        allowed_states=["success"],
+        failed_states=["failed"],
+    )
+
+    run_access_dbt_pipeline = TriggerDagRunOperator(
+        task_id="run_access_dbt_pipeline",
+        trigger_dag_id="access_dbt_pipeline",
+        wait_for_completion=True,
+        poke_interval=20,
+        reset_dag_run=False,
+        allowed_states=["success"],
+        failed_states=["failed"],
+    )
+
+    run_finance_dbt_pipeline = TriggerDagRunOperator(
+        task_id="run_finance_dbt_pipeline",
+        trigger_dag_id="finance_dbt_pipeline",
+        wait_for_completion=True,
+        poke_interval=20,
+        reset_dag_run=False,
+        allowed_states=["success"],
+        failed_states=["failed"],
     )
 
     finish = EmptyOperator(task_id="finish")
 
-    start >> [run_access, run_finance, run_hr, run_risk] >> finish
+    start >> run_full_source_build_pipeline
+
+    run_full_source_build_pipeline >> [
+        run_hr_cloud_pipeline,
+        run_risk_cloud_pipeline,
+        run_access_cloud_pipeline,
+        run_finance_cloud_pipeline,
+    ]
+
+    run_hr_cloud_pipeline >> run_hr_dbt_pipeline
+
+    run_hr_dbt_pipeline >> [
+        run_risk_dbt_pipeline,
+        run_access_dbt_pipeline,
+        run_finance_dbt_pipeline,
+    ]
+
+    run_risk_cloud_pipeline >> run_risk_dbt_pipeline
+    run_access_cloud_pipeline >> run_access_dbt_pipeline
+    run_finance_cloud_pipeline >> run_finance_dbt_pipeline
+
+    [
+        run_risk_dbt_pipeline,
+        run_access_dbt_pipeline,
+        run_finance_dbt_pipeline,
+    ] >> finish

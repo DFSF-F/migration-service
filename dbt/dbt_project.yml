@@ -1,0 +1,50 @@
+name: "migration_service_dbt"
+version: "1.0.0"
+config-version: 2
+
+profile: "migration_service_dbt"
+
+model-paths: ["models"]
+test-paths: ["tests"]
+seed-paths: ["seeds"]
+macro-paths: ["macros"]
+snapshot-paths: ["snapshots"]
+
+clean-targets:
+  - "target"
+  - "dbt_packages"
+  - "logs"
+
+models:
+  migration_service_dbt:
+    hr:
+      dds:
+        +materialized: table
+        +schema: hr_dds
+      dm:
+        +materialized: table
+        +schema: hr_dm
+
+    risk:
+      dds:
+        +materialized: table
+        +schema: risk_dds
+      dm:
+        +materialized: table
+        +schema: risk_dm
+
+    access:
+      dds:
+        +materialized: table
+        +schema: access_dds
+      dm:
+        +materialized: table
+        +schema: access_dm
+
+    finance:
+      dds:
+        +materialized: table
+        +schema: finance_dds
+      dm:
+        +materialized: table
+        +schema: finance_dm

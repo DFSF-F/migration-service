@@ -1,0 +1,13 @@
+version: 2
+
+sources:
+  - name: access_raw
+    database: "{{ env_var('GCP_PROJECT_ID') }}"
+    schema: access_raw
+    tables:
+      - name: access_system_accounts_raw
+      - name: access_role_assignments_raw
+      - name: access_login_events_raw
+      - name: access_privileged_access_raw
+      - name: access_file_operations_raw
+      - name: access_network_activity_raw

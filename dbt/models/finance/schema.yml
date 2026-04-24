@@ -1,0 +1,115 @@
+version: 2
+
+models:
+  - name: dim_finance_cost_center
+    description: "Finance cost center dimension"
+    columns:
+      - name: cost_center_id
+        tests:
+          - not_null
+          - unique
+
+      - name: cost_center_code
+        tests:
+          - not_null
+          - unique
+
+  - name: dim_finance_vendor
+    description: "Finance vendor dimension"
+    columns:
+      - name: finance_vendor_id
+        tests:
+          - not_null
+          - unique
+
+      - name: vendor_src_id
+        tests:
+          - not_null
+          - unique
+
+  - name: fct_employee_expense
+    description: "Employee expense fact"
+    columns:
+      - name: employee_expense_id
+        tests:
+          - not_null
+          - unique
+
+      - name: employee_id
+        tests:
+          - relationships:
+              arguments:
+                to: ref('dim_hr_employee')
+                field: employee_id
+
+      - name: cost_center_id
+        tests:
+          - relationships:
+              arguments:
+                to: ref('dim_finance_cost_center')
+                field: cost_center_id
+
+  - name: fct_employee_card_transaction
+    description: "Corporate card transaction fact"
+    columns:
+      - name: employee_card_transaction_id
+        tests:
+          - not_null
+          - unique
+
+      - name: employee_id
+        tests:
+          - relationships:
+              arguments:
+                to: ref('dim_hr_employee')
+                field: employee_id
+
+  - name: fct_employee_advance_report
+    description: "Advance report fact"
+    columns:
+      - name: employee_advance_report_id
+        tests:
+          - not_null
+          - unique
+
+      - name: employee_id
+        tests:
+          - relationships:
+              arguments:
+                to: ref('dim_hr_employee')
+                field: employee_id
+
+  - name: fct_employee_finance_signal
+    description: "Employee finance signals fact"
+    columns:
+      - name: employee_finance_signal_id
+        tests:
+          - not_null
+          - unique
+
+  - name: fct_employee_finance_snapshot
+    description: "Employee finance snapshot fact"
+    columns:
+      - name: employee_finance_snapshot_id
+        tests:
+          - not_null
+          - unique
+
+      - name: employee_id
+        tests:
+          - relationships:
+              arguments:
+                to: ref('dim_hr_employee')
+                field: employee_id
+
+  - name: employee_finance_control_report
+    description: "Final finance control report"
+    columns:
+      - name: employee_id
+        tests:
+          - not_null
+          - unique
+
+      - name: employee_src_id
+        tests:
+          - not_null

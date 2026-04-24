@@ -385,26 +385,6 @@ def validate_risk_raw_counts() -> None:
             )
 
 
-def build_risk_dds() -> None:
-    location = _required_env("GCP_REGION")
-    project_id = _required_env("GCP_PROJECT_ID")
-
-    sql = _read_sql_file(BQ_SQL_DIR / "risk_dds.sql").replace("{{PROJECT_ID}}", project_id)
-    result = _run_bq_query(sql, location=location)
-
-    print(f"risk_dds.sql executed. jobComplete={result.get('jobComplete')}")
-
-
-def build_risk_dm() -> None:
-    location = _required_env("GCP_REGION")
-    project_id = _required_env("GCP_PROJECT_ID")
-
-    sql = _read_sql_file(BQ_SQL_DIR / "risk_dm.sql").replace("{{PROJECT_ID}}", project_id)
-    result = _run_bq_query(sql, location=location)
-
-    print(f"risk_dm.sql executed. jobComplete={result.get('jobComplete')}")
-
-
 with DAG(
     dag_id="risk_cloud_pipeline",
     start_date=datetime(2024, 1, 1),
@@ -448,14 +428,4 @@ with DAG(
         python_callable=validate_risk_raw_counts,
     )
 
-    build_dds = PythonOperator(
-        task_id="build_risk_dds",
-        python_callable=build_risk_dds,
-    )
-
-    build_dm = PythonOperator(
-        task_id="build_risk_dm",
-        python_callable=build_risk_dm,
-    )
-
-    check_gp >> check_gcp >> export_raw >> upload_raw >> check_bq >> load_raw >> validate_raw >> build_dds >> build_dm
+    check_gp >> check_gcp >> export_raw >> upload_raw >> load_raw >> validate_raw

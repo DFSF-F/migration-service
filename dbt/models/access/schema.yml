@@ -1,0 +1,117 @@
+version: 2
+
+models:
+  - name: dim_access_system
+    description: "Access systems dimension"
+    columns:
+      - name: access_system_id
+        tests:
+          - not_null
+          - unique
+
+      - name: system_code
+        tests:
+          - not_null
+          - unique
+
+  - name: dim_access_role
+    description: "Access role dimension"
+    columns:
+      - name: access_role_id
+        tests:
+          - not_null
+          - unique
+
+      - name: system_id
+        tests:
+          - relationships:
+              arguments:
+                to: ref('dim_access_system')
+                field: access_system_id
+
+  - name: fct_employee_account
+    description: "Employee system accounts fact"
+    columns:
+      - name: employee_account_id
+        tests:
+          - not_null
+          - unique
+
+      - name: employee_id
+        tests:
+          - relationships:
+              arguments:
+                to: ref('dim_hr_employee')
+                field: employee_id
+
+  - name: fct_employee_role_assignment
+    description: "Employee role assignments fact"
+    columns:
+      - name: employee_role_assignment_id
+        tests:
+          - not_null
+          - unique
+
+      - name: employee_account_id
+        tests:
+          - relationships:
+              arguments:
+                to: ref('fct_employee_account')
+                field: employee_account_id
+
+      - name: access_role_id
+        tests:
+          - relationships:
+              arguments:
+                to: ref('dim_access_role')
+                field: access_role_id
+
+  - name: fct_employee_login_event
+    description: "Employee login events fact"
+    columns:
+      - name: employee_login_event_id
+        tests:
+          - not_null
+          - unique
+
+      - name: employee_account_id
+        tests:
+          - relationships:
+              arguments:
+                to: ref('fct_employee_account')
+                field: employee_account_id
+
+  - name: fct_employee_access_signal
+    description: "Employee access signals fact"
+    columns:
+      - name: employee_access_signal_id
+        tests:
+          - not_null
+          - unique
+
+  - name: fct_employee_access_snapshot
+    description: "Employee access snapshot fact"
+    columns:
+      - name: employee_access_snapshot_id
+        tests:
+          - not_null
+          - unique
+
+      - name: employee_id
+        tests:
+          - relationships:
+              arguments:
+                to: ref('dim_hr_employee')
+                field: employee_id
+
+  - name: employee_access_control_report
+    description: "Final access control report"
+    columns:
+      - name: employee_id
+        tests:
+          - not_null
+          - unique
+
+      - name: employee_src_id
+        tests:
+          - not_null

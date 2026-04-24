@@ -1,0 +1,117 @@
+version: 2
+
+models:
+  - name: dim_department
+    description: "Risk department dimension"
+    columns:
+      - name: department_id
+        tests:
+          - not_null
+          - unique
+
+      - name: department_src_id
+        tests:
+          - not_null
+
+  - name: dim_employee
+    description: "Risk employee dimension"
+    columns:
+      - name: employee_id
+        tests:
+          - not_null
+          - unique
+
+      - name: employee_src_id
+        tests:
+          - not_null
+          - unique
+
+      - name: department_id
+        tests:
+          - relationships:
+              arguments:
+                to: ref('dim_department')
+                field: department_id
+
+  - name: dim_risk_event_type
+    description: "Risk event type dimension"
+    columns:
+      - name: risk_event_type_id
+        tests:
+          - not_null
+          - unique
+
+  - name: fct_risk_event
+    description: "Fact table for employee risk events"
+    columns:
+      - name: risk_event_id
+        tests:
+          - not_null
+          - unique
+
+      - name: employee_id
+        tests:
+          - relationships:
+              arguments:
+                to: ref('dim_employee')
+                field: employee_id
+
+      - name: risk_event_type_id
+        tests:
+          - relationships:
+              arguments:
+                to: ref('dim_risk_event_type')
+                field: risk_event_type_id
+
+  - name: fct_employee_risk_factor
+    description: "Fact table with employee risk factors"
+    columns:
+      - name: employee_risk_factor_id
+        tests:
+          - not_null
+          - unique
+
+      - name: employee_id
+        tests:
+          - relationships:
+              arguments:
+                to: ref('dim_employee')
+                field: employee_id
+
+  - name: fct_employee_risk_snapshot
+    description: "Risk snapshot fact table"
+    columns:
+      - name: employee_risk_snapshot_id
+        tests:
+          - not_null
+          - unique
+
+      - name: employee_id
+        tests:
+          - relationships:
+              arguments:
+                to: ref('dim_employee')
+                field: employee_id
+
+  - name: employee_operational_risk_report
+    description: "Final employee operational risk report"
+    columns:
+      - name: employee_id
+        tests:
+          - not_null
+          - unique
+
+      - name: employee_src_id
+        tests:
+          - not_null
+
+      - name: risk_level_code
+        tests:
+          - not_null
+
+  - name: v_employee_risk_trend
+    description: "Risk trend view by employee"
+    columns:
+      - name: employee_id
+        tests:
+          - not_null

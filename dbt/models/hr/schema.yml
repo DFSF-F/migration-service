@@ -1,0 +1,153 @@
+version: 2
+
+models:
+  - name: dim_hr_department
+    description: "HR department dimension built from hr_raw.hr_department_history_raw"
+    columns:
+      - name: department_id
+        tests:
+          - not_null
+          - unique
+
+      - name: department_src_id
+        tests:
+          - not_null
+
+      - name: department_name
+        tests:
+          - not_null
+
+  - name: dim_position
+    description: "Position dimension built from current employee positions and position history"
+    columns:
+      - name: position_id
+        tests:
+          - not_null
+          - unique
+
+      - name: position_code
+        tests:
+          - not_null
+          - unique
+
+  - name: dim_hr_employee
+    description: "Current HR employee dimension"
+    columns:
+      - name: employee_id
+        tests:
+          - not_null
+          - unique
+
+      - name: employee_src_id
+        tests:
+          - not_null
+          - unique
+
+      - name: current_position_id
+        tests:
+          - relationships:
+              arguments:
+                to: ref('dim_position')
+                field: position_id
+
+      - name: department_id
+        tests:
+          - relationships:
+              arguments:
+                to: ref('dim_hr_department')
+                field: department_id
+
+  - name: fct_employee_absence
+    description: "Fact table for employee absence events"
+    columns:
+      - name: employee_absence_id
+        tests:
+          - not_null
+          - unique
+
+      - name: employee_id
+        tests:
+          - relationships:
+              arguments:
+                to: ref('dim_hr_employee')
+                field: employee_id
+
+  - name: fct_employee_position_history
+    description: "Fact table for employee position history"
+    columns:
+      - name: employee_position_history_id
+        tests:
+          - not_null
+          - unique
+
+      - name: employee_id
+        tests:
+          - relationships:
+              arguments:
+                to: ref('dim_hr_employee')
+                field: employee_id
+
+      - name: position_id
+        tests:
+          - relationships:
+              arguments:
+                to: ref('dim_position')
+                field: position_id
+
+  - name: fct_employee_activity_signal
+    description: "Fact table for employee activity and dismissal signals"
+    columns:
+      - name: employee_activity_signal_id
+        tests:
+          - not_null
+          - unique
+
+      - name: employee_id
+        tests:
+          - relationships:
+              arguments:
+                to: ref('dim_hr_employee')
+                field: employee_id
+
+  - name: fct_employee_hr_snapshot
+    description: "Snapshot fact table for HR risk indicators"
+    columns:
+      - name: employee_hr_snapshot_id
+        tests:
+          - not_null
+          - unique
+
+      - name: employee_id
+        tests:
+          - relationships:
+              arguments:
+                to: ref('dim_hr_employee')
+                field: employee_id
+
+  - name: employee_hr_profile_report
+    description: "Final HR analytical mart with employee profile and instability indicators"
+    columns:
+      - name: employee_id
+        tests:
+          - not_null
+          - unique
+
+      - name: employee_src_id
+        tests:
+          - not_null
+
+      - name: instability_level_code
+        tests:
+          - not_null
+
+  - name: v_employee_instability_signals
+    description: "Analytical mart with detailed employee instability signals"
+    columns:
+      - name: employee_activity_signal_id
+        tests:
+          - not_null
+          - unique
+
+      - name: employee_id
+        tests:
+          - not_null

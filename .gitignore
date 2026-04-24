@@ -26,3 +26,8 @@ sql/**/debug/*.sql
 tmp/
 temp/
 *.log
+
+dbt/logs/
+dbt/target/
+dbt/dbt_packages/
+dbt/.user.yml
