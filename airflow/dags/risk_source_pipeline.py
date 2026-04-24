@@ -13,7 +13,7 @@ from airflow.providers.common.sql.operators.sql import (
 from airflow.providers.postgres.hooks.postgres import PostgresHook
 
 
-SQL_ROOT = Path("/opt/airflow/project/sql/access")
+SQL_ROOT = Path("/opt/airflow/project/sql/risk")
 RAW_OUTPUT_DIR = Path("/opt/airflow/project/scripts/data_gen/output")
 
 
@@ -39,21 +39,21 @@ def execute_sql_file(filename: str) -> None:
 
 def load_raw_to_greenplum() -> None:
     file_mapping = [
-        ("raw.access_system_accounts_raw", "access_system_accounts_raw.csv"),
-        ("raw.access_role_assignments_raw", "access_role_assignments_raw.csv"),
-        ("raw.access_privileged_access_raw", "access_privileged_access_raw.csv"),
-        ("raw.access_login_events_raw", "access_login_events_raw.csv"),
-        ("raw.access_file_operations_raw", "access_file_operations_raw.csv"),
-        ("raw.access_network_activity_raw", "access_network_activity_raw.csv"),
+        ("raw.risk_org_structure_raw", "risk_org_structure_raw.csv"),
+        ("raw.risk_employee_registry_raw", "risk_employee_registry_raw.csv"),
+        ("raw.risk_ib_incidents_raw", "risk_ib_incidents_raw.csv"),
+        ("raw.risk_security_incidents_raw", "risk_security_incidents_raw.csv"),
+        ("raw.risk_compliance_incidents_raw", "risk_compliance_incidents_raw.csv"),
+        ("raw.risk_nonwork_activity_raw", "risk_nonwork_activity_raw.csv"),
     ]
 
     truncate_sql = """
-    truncate table raw.access_system_accounts_raw;
-    truncate table raw.access_role_assignments_raw;
-    truncate table raw.access_privileged_access_raw;
-    truncate table raw.access_login_events_raw;
-    truncate table raw.access_file_operations_raw;
-    truncate table raw.access_network_activity_raw;
+    truncate table raw.risk_ib_incidents_raw;
+    truncate table raw.risk_security_incidents_raw;
+    truncate table raw.risk_compliance_incidents_raw;
+    truncate table raw.risk_nonwork_activity_raw;
+    truncate table raw.risk_employee_registry_raw;
+    truncate table raw.risk_org_structure_raw;
     """
 
     hook = PostgresHook(postgres_conn_id="greenplum_dwh")
@@ -80,23 +80,17 @@ def load_raw_to_greenplum() -> None:
 
 
 with DAG(
-    dag_id="access_pipeline",
+    dag_id="risk_source_pipeline",
     start_date=datetime(2024, 1, 1),
     schedule=None,
     catchup=False,
-    tags=["greenplum", "access", "migration"],
+    tags=["greenplum", "risk", "migration"],
 ) as dag:
 
     check_connection = SQLExecuteQueryOperator(
         task_id="check_connection",
         conn_id="greenplum_dwh",
         sql="select 1;",
-    )
-
-    check_hr_dependency = SQLCheckOperator(
-        task_id="check_hr_dependency",
-        conn_id="greenplum_dwh",
-        sql="select count(*) > 0 from dds.dim_hr_employee;",
     )
 
     create_raw_tables = PythonOperator(
@@ -120,7 +114,7 @@ with DAG(
     generate_raw_files = BashOperator(
         task_id="generate_raw_files",
         bash_command=(
-            "python3 /opt/airflow/project/scripts/data_gen/generate_access_raw_data.py "
+            "python3 /opt/airflow/project/scripts/data_gen/generate_risk_raw_data.py "
             "--output-dir /opt/airflow/project/scripts/data_gen/output"
         ),
     )
@@ -145,12 +139,11 @@ with DAG(
     check_dm_not_empty = SQLCheckOperator(
         task_id="check_dm_not_empty",
         conn_id="greenplum_dwh",
-        sql="select count(*) > 0 from dm.employee_access_control_report;",
+        sql="select count(*) > 0 from dm.employee_operational_risk_report;",
     )
 
     (
         check_connection
-        >> check_hr_dependency
         >> create_raw_tables
         >> create_dds_tables
         >> create_dm_objects

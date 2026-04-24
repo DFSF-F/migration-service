@@ -3,31 +3,7 @@ from __future__ import annotations
 from datetime import datetime
 
 from airflow import DAG
-from airflow.providers.docker.operators.docker import DockerOperator
-from docker.types import Mount
-
-
-DBT_PROJECT_DIR = "/app/dbt"
-DBT_IMAGE = "migration-service-dbt-runner"
-
-DBT_MOUNTS = [
-    Mount(
-        source="/Users/kaemzy/Desktop/migration-service/dbt",
-        target="/app/dbt",
-        type="bind",
-    ),
-    Mount(
-        source="/Users/kaemzy/Desktop/migration-service/secrets",
-        target="/app/secrets",
-        type="bind",
-        read_only=True,
-    ),
-]
-
-DBT_ENV = {
-    "GCP_PROJECT_ID": "dwh-migration-492618",
-    "GCP_REGION": "europe-west1",
-}
+from helpers.dbt_helper import build_dbt_debug_task, build_dbt_run_task
 
 
 with DAG(
@@ -39,31 +15,7 @@ with DAG(
     max_active_tasks=1,
     tags=["dbt", "access", "bigquery"],
 ) as dag:
-
-    dbt_debug = DockerOperator(
-        task_id="dbt_debug",
-        image=DBT_IMAGE,
-        api_version="auto",
-        auto_remove="success",
-        command=f"bash -c 'cd {DBT_PROJECT_DIR} && dbt debug'",
-        docker_url="unix://var/run/docker.sock",
-        network_mode="migration-service_default",
-        mount_tmp_dir=False,
-        mounts=DBT_MOUNTS,
-        environment=DBT_ENV,
-    )
-
-    dbt_run_access = DockerOperator(
-        task_id="dbt_run_access",
-        image=DBT_IMAGE,
-        api_version="auto",
-        auto_remove="success",
-        command=f"bash -c 'cd {DBT_PROJECT_DIR} && dbt clean && dbt run --select path:models/access --threads 1 --no-partial-parse'",
-        docker_url="unix://var/run/docker.sock",
-        network_mode="migration-service_default",
-        mount_tmp_dir=False,
-        mounts=DBT_MOUNTS,
-        environment=DBT_ENV,
-    )
+    dbt_debug = build_dbt_debug_task()
+    dbt_run_access = build_dbt_run_task(domain="access", task_id="dbt_run_access")
 
     dbt_debug >> dbt_run_access

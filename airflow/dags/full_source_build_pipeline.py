@@ -19,7 +19,7 @@ with DAG(
 
     run_hr = TriggerDagRunOperator(
         task_id="run_hr_pipeline",
-        trigger_dag_id="hr_pipeline",
+        trigger_dag_id="hr_source_pipeline",
         wait_for_completion=True,
         poke_interval=20,
         reset_dag_run=True,
@@ -29,7 +29,7 @@ with DAG(
 
     run_risk = TriggerDagRunOperator(
         task_id="run_risk_pipeline",
-        trigger_dag_id="risk_pipeline",
+        trigger_dag_id="risk_source_pipeline",
         wait_for_completion=True,
         poke_interval=20,
         reset_dag_run=True,
@@ -39,7 +39,7 @@ with DAG(
 
     run_access = TriggerDagRunOperator(
         task_id="run_access_pipeline",
-        trigger_dag_id="access_pipeline",
+        trigger_dag_id="access_source_pipeline",
         wait_for_completion=True,
         poke_interval=20,
         reset_dag_run=True,
@@ -49,7 +49,7 @@ with DAG(
 
     run_finance = TriggerDagRunOperator(
         task_id="run_finance_pipeline",
-        trigger_dag_id="finance_pipeline",
+        trigger_dag_id="finance_source_pipeline",
         wait_for_completion=True,
         poke_interval=20,
         reset_dag_run=True,

@@ -13,7 +13,7 @@ from airflow.providers.common.sql.operators.sql import (
 from airflow.providers.postgres.hooks.postgres import PostgresHook
 
 
-SQL_ROOT = Path("/opt/airflow/project/sql/hr")
+SQL_ROOT = Path("/opt/airflow/project/sql/finance")
 RAW_OUTPUT_DIR = Path("/opt/airflow/project/scripts/data_gen/output")
 
 
@@ -39,21 +39,21 @@ def execute_sql_file(filename: str) -> None:
 
 def load_raw_to_greenplum() -> None:
     file_mapping = [
-        ("raw.hr_employee_master_raw", "hr_employee_master_raw.csv"),
-        ("raw.hr_position_history_raw", "hr_position_history_raw.csv"),
-        ("raw.hr_department_history_raw", "hr_department_history_raw.csv"),
-        ("raw.hr_absence_events_raw", "hr_absence_events_raw.csv"),
-        ("raw.hr_overtime_events_raw", "hr_overtime_events_raw.csv"),
-        ("raw.hr_dismissal_signals_raw", "hr_dismissal_signals_raw.csv"),
+        ("raw.finance_employee_expense_raw", "finance_employee_expense_raw.csv"),
+        ("raw.finance_corporate_card_txn_raw", "finance_corporate_card_txn_raw.csv"),
+        ("raw.finance_advance_report_raw", "finance_advance_report_raw.csv"),
+        ("raw.finance_payroll_adjustment_raw", "finance_payroll_adjustment_raw.csv"),
+        ("raw.finance_vendor_payment_raw", "finance_vendor_payment_raw.csv"),
+        ("raw.finance_budget_limit_raw", "finance_budget_limit_raw.csv"),
     ]
 
     truncate_sql = """
-    truncate table raw.hr_employee_master_raw;
-    truncate table raw.hr_position_history_raw;
-    truncate table raw.hr_department_history_raw;
-    truncate table raw.hr_absence_events_raw;
-    truncate table raw.hr_overtime_events_raw;
-    truncate table raw.hr_dismissal_signals_raw;
+    truncate table raw.finance_employee_expense_raw;
+    truncate table raw.finance_corporate_card_txn_raw;
+    truncate table raw.finance_advance_report_raw;
+    truncate table raw.finance_payroll_adjustment_raw;
+    truncate table raw.finance_vendor_payment_raw;
+    truncate table raw.finance_budget_limit_raw;
     """
 
     hook = PostgresHook(postgres_conn_id="greenplum_dwh")
@@ -80,17 +80,23 @@ def load_raw_to_greenplum() -> None:
 
 
 with DAG(
-    dag_id="hr_pipeline",
+    dag_id="finance_source_pipeline",
     start_date=datetime(2024, 1, 1),
     schedule=None,
     catchup=False,
-    tags=["greenplum", "hr", "migration"],
+    tags=["greenplum", "finance", "migration"],
 ) as dag:
 
     check_connection = SQLExecuteQueryOperator(
         task_id="check_connection",
         conn_id="greenplum_dwh",
         sql="select 1;",
+    )
+
+    check_hr_dependency = SQLCheckOperator(
+        task_id="check_hr_dependency",
+        conn_id="greenplum_dwh",
+        sql="select count(*) > 0 from dds.dim_hr_employee;",
     )
 
     create_raw_tables = PythonOperator(
@@ -114,7 +120,7 @@ with DAG(
     generate_raw_files = BashOperator(
         task_id="generate_raw_files",
         bash_command=(
-            "python3 /opt/airflow/project/scripts/data_gen/generate_hr_raw_data.py "
+            "python3 /opt/airflow/project/scripts/data_gen/generate_finance_raw_data.py "
             "--output-dir /opt/airflow/project/scripts/data_gen/output"
         ),
     )
@@ -139,11 +145,12 @@ with DAG(
     check_dm_not_empty = SQLCheckOperator(
         task_id="check_dm_not_empty",
         conn_id="greenplum_dwh",
-        sql="select count(*) > 0 from dm.employee_hr_profile_report;",
+        sql="select count(*) > 0 from dm.employee_finance_control_report;",
     )
 
     (
         check_connection
+        >> check_hr_dependency
         >> create_raw_tables
         >> create_dds_tables
         >> create_dm_objects

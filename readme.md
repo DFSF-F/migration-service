@@ -146,8 +146,6 @@ migration-service/
 * **infra/greenplum/init/** — Greenplum initialization scripts
 * **src/migration_service/** — main migration code
 * **dbt/** — target analytical models
-* **metadata/** — extracted schemas and artifacts
-* **config/** — migration configuration
 * **scripts/** — helper scripts
 
 ---
