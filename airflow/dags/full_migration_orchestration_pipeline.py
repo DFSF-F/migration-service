@@ -18,16 +18,6 @@ with DAG(
 
     start = EmptyOperator(task_id="start")
 
-    run_full_source_build_pipeline = TriggerDagRunOperator(
-        task_id="run_full_source_build_pipeline",
-        trigger_dag_id="full_source_build_pipeline",
-        wait_for_completion=True,
-        poke_interval=20,
-        reset_dag_run=False,
-        allowed_states=["success"],
-        failed_states=["failed"],
-    )
-
     run_hr_cloud_pipeline = TriggerDagRunOperator(
         task_id="run_hr_cloud_pipeline",
         trigger_dag_id="hr_cloud_pipeline",
@@ -110,9 +100,7 @@ with DAG(
 
     finish = EmptyOperator(task_id="finish")
 
-    start >> run_full_source_build_pipeline
-
-    run_full_source_build_pipeline >> [
+    start >> [
         run_hr_cloud_pipeline,
         run_risk_cloud_pipeline,
         run_access_cloud_pipeline,
@@ -120,16 +108,10 @@ with DAG(
     ]
 
     run_hr_cloud_pipeline >> run_hr_dbt_pipeline
-
-    run_hr_dbt_pipeline >> [
-        run_risk_dbt_pipeline,
-        run_access_dbt_pipeline,
-        run_finance_dbt_pipeline,
-    ]
-
     run_risk_cloud_pipeline >> run_risk_dbt_pipeline
-    run_access_cloud_pipeline >> run_access_dbt_pipeline
-    run_finance_cloud_pipeline >> run_finance_dbt_pipeline
+
+    [run_hr_dbt_pipeline, run_access_cloud_pipeline] >> run_access_dbt_pipeline
+    [run_hr_dbt_pipeline, run_finance_cloud_pipeline] >> run_finance_dbt_pipeline
 
     [
         run_risk_dbt_pipeline,

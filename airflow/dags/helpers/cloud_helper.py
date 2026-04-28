@@ -2,11 +2,12 @@ from __future__ import annotations
 
 import json
 import os
-import subprocess
 import time
 from pathlib import Path
 
 import requests
+from google.auth.transport.requests import Request
+from google.oauth2 import service_account
 
 
 def required_env(name: str) -> str:
@@ -27,44 +28,24 @@ def read_sql_file(file_path: Path) -> str:
 
 
 def get_gcloud_access_token() -> str:
-    key_path = required_env("GOOGLE_APPLICATION_CREDENTIALS")
+    key_path = Path(required_env("GOOGLE_APPLICATION_CREDENTIALS"))
+    if not key_path.exists():
+        raise FileNotFoundError(f"GCP key file not found: {key_path}")
 
-    activate = subprocess.run(
-        [
-            "gcloud",
-            "auth",
-            "activate-service-account",
-            f"--key-file={key_path}",
-        ],
-        capture_output=True,
-        text=True,
-    )
-    if activate.returncode != 0:
-        raise RuntimeError(
-            "Failed to activate service account.\n"
-            f"STDOUT:\n{activate.stdout[:4000]}\n"
-            f"STDERR:\n{activate.stderr[:4000]}"
+    scopes = ["https://www.googleapis.com/auth/cloud-platform"]
+
+    try:
+        credentials = service_account.Credentials.from_service_account_file(
+            str(key_path),
+            scopes=scopes,
         )
+        credentials.refresh(Request())
+    except Exception as e:
+        raise RuntimeError(f"Failed to obtain GCP access token from service account key: {e}") from e
 
-    token_proc = subprocess.run(
-        ["gcloud", "auth", "print-access-token"],
-        capture_output=True,
-        text=True,
-    )
-    if token_proc.returncode != 0:
-        raise RuntimeError(
-            "Failed to print access token.\n"
-            f"STDOUT:\n{token_proc.stdout[:4000]}\n"
-            f"STDERR:\n{token_proc.stderr[:4000]}"
-        )
-
-    token = token_proc.stdout.strip()
+    token = credentials.token
     if not token:
-        raise RuntimeError(
-            "Access token is empty.\n"
-            f"STDOUT:\n{token_proc.stdout[:4000]}\n"
-            f"STDERR:\n{token_proc.stderr[:4000]}"
-        )
+        raise RuntimeError("Access token is empty after credentials refresh.")
 
     return token
 
@@ -116,10 +97,9 @@ def submit_bq_job(configuration: dict, location: str | None = None) -> dict:
 
 def wait_bq_query_job(job_id: str, location: str, max_polls: int = 120, sleep_sec: int = 2) -> dict:
     project_id = required_env("GCP_PROJECT_ID")
+    token = get_gcloud_access_token()
 
     for _ in range(max_polls):
-        token = get_gcloud_access_token()
-
         response = requests.get(
             f"https://bigquery.googleapis.com/bigquery/v2/projects/{project_id}/queries/{job_id}",
             headers={
@@ -160,10 +140,9 @@ def wait_bq_query_job(job_id: str, location: str, max_polls: int = 120, sleep_se
 
 def wait_bq_load_job(job_id: str, location: str, max_polls: int = 120, sleep_sec: int = 2) -> dict:
     project_id = required_env("GCP_PROJECT_ID")
+    token = get_gcloud_access_token()
 
     for _ in range(max_polls):
-        token = get_gcloud_access_token()
-
         response = requests.get(
             f"https://bigquery.googleapis.com/bigquery/v2/projects/{project_id}/jobs/{job_id}",
             headers={
