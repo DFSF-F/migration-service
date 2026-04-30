@@ -1,5 +1,7 @@
 product: hr
 
+cross_product_dependencies: []
+
 object_dependencies:
   - target: dds.dim_hr_department
     depends_on:
@@ -7,7 +9,6 @@ object_dependencies:
 
   - target: dds.dim_position
     depends_on:
-      - raw.hr_employee_master_raw
       - raw.hr_position_history_raw
 
   - target: dds.dim_hr_employee
@@ -16,41 +17,41 @@ object_dependencies:
       - dds.dim_hr_department
       - dds.dim_position
 
-  - target: dds.fct_employee_position_history
-    depends_on:
-      - raw.hr_position_history_raw
-      - dds.dim_hr_employee
-      - dds.dim_position
-      - dds.dim_hr_department
-
   - target: dds.fct_employee_absence
     depends_on:
       - raw.hr_absence_events_raw
       - dds.dim_hr_employee
 
+  - target: dds.fct_employee_position_history
+    depends_on:
+      - raw.hr_position_history_raw
+      - dds.dim_hr_employee
+      - dds.dim_position
+
   - target: dds.fct_employee_activity_signal
     depends_on:
       - raw.hr_overtime_events_raw
       - raw.hr_dismissal_signals_raw
+      - raw.hr_absence_events_raw
       - dds.dim_hr_employee
 
   - target: dds.fct_employee_hr_snapshot
     depends_on:
       - dds.dim_hr_employee
       - dds.fct_employee_absence
+      - dds.fct_employee_position_history
       - dds.fct_employee_activity_signal
 
   - target: dm.employee_hr_profile_report
     depends_on:
-      - dds.fct_employee_hr_snapshot
       - dds.dim_hr_employee
-      - dds.dim_position
       - dds.dim_hr_department
+      - dds.dim_position
+      - dds.fct_employee_hr_snapshot
 
   - target: dm.v_employee_instability_signals
     depends_on:
       - dds.fct_employee_activity_signal
       - dds.dim_hr_employee
-      - dds.dim_position
       - dds.dim_hr_department
-      - dds.fct_employee_hr_snapshot
+      - dds.dim_position

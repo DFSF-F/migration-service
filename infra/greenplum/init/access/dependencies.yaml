@@ -3,6 +3,7 @@ product: access
 cross_product_dependencies:
   - dds.dim_hr_employee
   - dds.dim_hr_department
+  - dds.dim_position
 
 object_dependencies:
   - target: dds.dim_access_system
@@ -54,13 +55,7 @@ object_dependencies:
   - target: dm.employee_access_control_report
     depends_on:
       - dds.fct_employee_access_snapshot
-      - dds.dim_hr_employee
-      - dds.dim_hr_department
-      - dds.fct_employee_access_signal
-
-  - target: dm.v_privileged_access_exceptions
-    depends_on:
       - dds.fct_employee_access_signal
       - dds.dim_hr_employee
       - dds.dim_hr_department
-      - dds.fct_employee_access_snapshot
+      - dds.dim_position

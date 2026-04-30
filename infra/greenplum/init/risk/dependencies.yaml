@@ -1,33 +1,6 @@
 product: risk
 
-pipeline_steps:
-  - id: create_raw_tables
-    artifact: risk/001_raw_tables.sql
-    type: sql
-
-  - id: create_dds_tables
-    artifact: risk/002_dds_tables.sql
-    type: sql
-
-  - id: create_dm_objects
-    artifact: risk/003_dm_objects.sql
-    type: sql
-
-  - id: generate_raw_files
-    artifact: scripts/data_gen/generate_risk_raw_data.py
-    type: python
-
-  - id: load_raw_data
-    artifact: airflow_task.load_raw_to_greenplum
-    type: airflow_python
-
-  - id: build_dds
-    artifact: risk/005_build_dds.sql
-    type: sql
-
-  - id: build_dm
-    artifact: risk/006_build_dm.sql
-    type: sql
+cross_product_dependencies: []
 
 object_dependencies:
   - target: dds.dim_department
@@ -61,8 +34,9 @@ object_dependencies:
 
   - target: dds.fct_employee_risk_snapshot
     depends_on:
-      - dds.fct_employee_risk_factor
       - dds.dim_employee
+      - dds.fct_employee_risk_factor
+      - dds.fct_risk_event
 
   - target: dm.employee_operational_risk_report
     depends_on:

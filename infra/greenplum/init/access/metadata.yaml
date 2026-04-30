@@ -22,4 +22,3 @@ layers:
 
   dm:
     - dm.employee_access_control_report
-    - dm.v_privileged_access_exceptions

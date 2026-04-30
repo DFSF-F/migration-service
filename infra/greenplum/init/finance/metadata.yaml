@@ -1,15 +1,15 @@
 product: finance
 code: employee_finance_control
-name: Финансовые расходы, авансы и платёжные сигналы сотрудника
+name: Финансовые операции, расходы и контрольные сигналы сотрудника
 
 layers:
   raw:
+    - raw.finance_budget_limit_raw
     - raw.finance_employee_expense_raw
+    - raw.finance_vendor_payment_raw
     - raw.finance_corporate_card_txn_raw
     - raw.finance_advance_report_raw
     - raw.finance_payroll_adjustment_raw
-    - raw.finance_vendor_payment_raw
-    - raw.finance_budget_limit_raw
 
   dds:
     - dds.dim_finance_cost_center
@@ -22,4 +22,3 @@ layers:
 
   dm:
     - dm.employee_finance_control_report
-    - dm.v_employee_suspicious_expense_signals

@@ -1,6 +1,6 @@
 product: hr
 code: employee_hr_profile
-name: Кадровый профиль и активность сотрудника
+name: Кадровый профиль, структура и HR-события сотрудника
 
 layers:
   raw:
@@ -15,8 +15,8 @@ layers:
     - dds.dim_hr_department
     - dds.dim_position
     - dds.dim_hr_employee
-    - dds.fct_employee_position_history
     - dds.fct_employee_absence
+    - dds.fct_employee_position_history
     - dds.fct_employee_activity_signal
     - dds.fct_employee_hr_snapshot
 
