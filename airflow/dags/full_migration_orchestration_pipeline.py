@@ -98,6 +98,16 @@ with DAG(
         failed_states=["failed"],
     )
 
+    run_validation_pipeline = TriggerDagRunOperator(
+        task_id="run_validation_pipeline",
+        trigger_dag_id="post_migration_validation_pipeline",
+        wait_for_completion=True,
+        poke_interval=20,
+        reset_dag_run=False,
+        allowed_states=["success"],
+        failed_states=["failed"],
+    )
+
     finish = EmptyOperator(task_id="finish")
 
     start >> [
@@ -114,7 +124,8 @@ with DAG(
     [run_hr_dbt_pipeline, run_finance_cloud_pipeline] >> run_finance_dbt_pipeline
 
     [
+        run_hr_dbt_pipeline,
         run_risk_dbt_pipeline,
         run_access_dbt_pipeline,
         run_finance_dbt_pipeline,
-    ] >> finish
+    ] >> run_validation_pipeline >> finish
