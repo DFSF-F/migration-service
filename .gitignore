@@ -11,6 +11,7 @@ __pycache__/
 # Local secrets
 secrets/gcp/*.json
 !secrets/gcp/.gitkeep
+.env
 
 # Local BigQuery runners
 scripts/run_bigquery_scenarios.py
